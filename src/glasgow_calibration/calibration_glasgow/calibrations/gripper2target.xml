@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<gripperHtarget_LeftCamera type_id="opencv-matrix">
+  <rows>4</rows>
+  <cols>4</cols>
+  <dt>f</dt>
+  <data>
+    9.88770485e-01 2.34607384e-02 -1.47589058e-01 -6.32488206e-02
+    1.49122894e-01 -9.03822184e-02 9.84679341e-01 7.37059936e-02
+    9.76187736e-03 -9.95630741e-01 -9.28658247e-02 1.07201405e-01 0. 0.
+    0. 1.</data></gripperHtarget_LeftCamera>
+</opencv_storage>

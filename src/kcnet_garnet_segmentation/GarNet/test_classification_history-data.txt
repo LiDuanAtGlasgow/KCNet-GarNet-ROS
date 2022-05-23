@@ -1,0 +1,16 @@
+Shape:
+Validate set: Average loss: 0.4178, Accuracy: 1581/1800 (88%)
+Validate set: Average loss: 0.5066, Accuracy: 2530/3000 (84%)
+
+Discretised weight:
+Validate set: Average loss: 0.3556, Accuracy: 1568/1800 (87%)
+Validate set: Average loss: 0.4158, Accuracy: 2514/3000 (84%)
+
+RGB
+Shape:
+Validate set: Average loss: 0.2640, Accuracy: 1675/1800 (93%)
+Validate set: Average loss: 1.9655, Accuracy: 1425/3000 (48%)
+
+Discretised weight:
+Validate set: Average loss: 0.2214, Accuracy: 1675/1800 (93%)
+Validate set: Average loss: 1.3211, Accuracy: 1974/3000 (66%)

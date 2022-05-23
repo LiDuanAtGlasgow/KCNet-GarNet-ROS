@@ -1,0 +1,25 @@
+<!--
+	Launch file for Baxter's hand-eye calibration
+	
+	After launching this file...
+		
+	SoCS, UoG. Gerardo Aragon-Camarasa & Aamir Khan. 09/2016
+-->
+
+<launch>
+
+
+	<arg name="moveit_sensor_manager" default="baxter" />
+	<arg name="kinect" default="false" />
+	<arg name="xtion" default="true" />
+	<!--arg name="zed" default="false" /-->
+	<arg name="camera_link_pose" default="0.0 0.0 0.0 0.0 0.0 0.0"/>
+		<include file="$(find baxter_moveit_config)/launch/$(arg moveit_sensor_manager)_moveit_sensor_manager.launch" >
+		<arg name="kinect" value="$(arg kinect)" />
+		<arg name="xtion" value="$(arg xtion)" />
+		<!--arg name="zed" value="$(arg zed)" /-->
+		<arg name="camera_link_pose" default="$(arg camera_link_pose)"/>
+	</include>
+	
+</launch>
+
