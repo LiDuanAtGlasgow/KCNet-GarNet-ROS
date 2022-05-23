@@ -133,6 +133,5 @@ if __name__=='__main__':
     try:
         rospy.init_node('manipulation', anonymous=True)
         manipulation()
-
     except rospy.ROSInterruptException:
         pass

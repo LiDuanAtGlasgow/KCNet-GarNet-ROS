@@ -30,7 +30,10 @@ def early_stop(embedding,labels,video_labels,confid_circ=None,category_idx=None,
             cont_location.append(line.vertices)
         cont_location=np.array(cont_location)[0]
         contours.append(cont_location)
+        plt.plot(x,y,'o',color=color[i],label=label_plottings[i])
         standard_points[i,:]=(x,y)
+    plt.legend(loc='best')
+    plt.show()
 
     i=0
     total=0

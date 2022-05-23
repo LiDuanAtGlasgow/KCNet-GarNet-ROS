@@ -1,5 +1,4 @@
 #type:ignore
-from calendar import c
 import torch
 import pandas as pd
 import cv2
@@ -15,19 +14,6 @@ import matplotlib.pyplot as plt
 import time
 import csv
 from continuous_perception import early_stop
-import rospy
-from moveit_python import PlanningSceneInterface, MoveGroupInterface
-from geometry_msgs.msg import PoseStamped
-import baxter_interface
-from cv_bridge import CvBridge
-import rospy
-from sensor_msgs.msg import PointCloud2
-import rospy
-import pcl
-from sensor_msgs.msg import PointCloud2
-import sensor_msgs.point_cloud2 as pc2
-import rospy
-import ros_numpy
 import csv
 import sys
 from sklearn.preprocessing import OneHotEncoder
@@ -36,7 +22,10 @@ np.random.seed(42)
 torch.manual_seed(42)
 cuda=torch.cuda.is_available()
 
-def extract_embeddings(dataloader,model):
+def extract_embeddings_from_csv(csv_file,dataloader,model):
+    embeddings_seen=csv_file[:,1:3]
+    labels_seen=labels[:,3]
+    video_labels_seen=csv_file[:,4]
     with torch.no_grad():
         model.eval()
         embeddings=np.zeros((len(dataloader.dataset),2))
@@ -44,12 +33,13 @@ def extract_embeddings(dataloader,model):
         video_labels=np.zeros(len(dataloader.dataset))
         k=0
         for images, target, video_label in dataloader:
-            if cuda:
-                images=images.cuda()
             embeddings[k:k+len(images)]=model.get_emdding(images).data.cpu().numpy()
             labels[k:k+len(images)]=target.numpy()
             video_labels[k:k+len(images)]=video_label.numpy()
             k+=len(images)
+    embeddings=np.concatenate((embeddings_seen,embeddings),axis=0)
+    labels=np.concatenate((labels_seen,labels),axis=0)
+    video_labels=np.concatenate((video_labels_seen,video_labels),axis=0)
     return embeddings,labels,video_labels
 
 class ResNet18_Embedding(nn.Module):
@@ -136,112 +126,11 @@ def plot_embeddings(embeddings,targets,xlim=None,ylim=None):
     if ylim:
         plt.ylim(ylim[0],ylim[1])
     plt.legend(physnet_classes)
-    plt.savefig(fig_path+'{:f}.png'.format(time.time()))
     plt.show()
 
-def garnet_cp_plotting(cp_data,samp_number=600,number_category=5):
-    samps_number=np.array([0,600,1800,3000])
-    for i in range (number_category):
-        if number_category==5:
-            names=['Pant','Shirt','Sweater','Towel','T-shirt']
-            df=pd.DataFrame({'x':cp_data[i*samp_number:(i+1)*samp_number,0],'pant':cp_data[i*samp_number:(i+1)*samp_number,1],
-            'shirt':cp_data[i*samp_number:(i+1)*samp_number,2],'sweater':cp_data[i*samp_number:(i+1)*samp_number,3],
-            'towel':cp_data[i*samp_number:(i+1)*samp_number,4],'tshirt':cp_data[i*samp_number:(i+1)*samp_number,5],
-            'acc':cp_data[i*samp_number:(i+1)*samp_number,6]})
-            plt.figure()
-            subplot=plt.subplot()
-            subplot.plot('x','pant',data=df,color='red',label='pant')
-            subplot.plot('x','shirt',data=df,color='blue',label='shirt')
-            subplot.plot('x','sweater',data=df,color='green',label='sweater')
-            subplot.plot('x','towel',data=df,color='purple',label='towel')
-            subplot.plot('x','tshirt',data=df,color='gray',label='tshirt')
-            subplot.set_xlabel('Input')
-            subplot.set_ylabel('Decision Distance')
-            subplot2=subplot.twinx()
-            subplot2.plot('x','acc',data=df,color='grey',linewidth=10,label='Accuracy',linestyle='dotted')
-            subplot2.set_ylabel('Accuracy(%)')
-            subplot2.set_ylim([0,100])
-            plt.legend()
-            plt.title(names[i])
-            plt.savefig('./'+names[i]+'_category.png')
-            plt.show()
-        if number_category==3:
-            names=['Light','Medium','Heavy']
-            df=pd.DataFrame({'x':cp_data[samps_number[i]:samps_number[i+1],0],'light':cp_data[samps_number[i]:samps_number[i+1],1],
-            'medium':cp_data[samps_number[i]:samps_number[i+1],2],'heavy':cp_data[samps_number[i]:samps_number[i+1],3],
-            'acc':cp_data[samps_number[i]:samps_number[i+1],4]})
-            plt.figure()
-            subplot=plt.subplot()
-            subplot.plot('x','light',data=df,color='red',label='light')
-            subplot.plot('x','medium',data=df,color='blue',label='medium')
-            subplot.plot('x','heavy',data=df,color='green',label='heavy')
-            subplot.set_xlabel('Input')
-            subplot.set_ylabel('Decision Distance')
-            subplot2=subplot.twinx()
-            subplot2.plot('x','acc',data=df,color='grey',linewidth=10,label='Accuracy',linestyle='dotted')
-            subplot2.set_ylabel('Accuracy(%)')
-            subplot2.set_ylim([0,100])
-            plt.legend()
-            plt.title(names[i])
-            plt.savefig('./'+names[i]+'_category.png')
-            plt.show()
-
-def GarNet2KCNet():
-    p = PlanningSceneInterface("base")
-    g = MoveGroupInterface("both_arms", "base")
-    gr = MoveGroupInterface("right_arm", "base")
-    rightgripper=baxter_interface.Gripper('right')
-    jts_both = ['left_e0', 'left_e1', 'left_s0', 'left_s1', 'left_w0', 'left_w1', 'left_w2', 'right_e0', 'right_e1', 'right_s0', 'right_s1', 'right_w0', 'right_w1', 'right_w2']
-    pos1 = [-1.441426162661994, 0.8389151064712133, 0.14240920034028015, -0.14501001475655606, -1.7630090377446503, -1.5706376573674472, 0.09225918246029519,1.7238109084167481, 1.7169079948791506, 0.36930587426147465, -0.33249033539428713, -1.2160632682067871, 1.668587600115967, -1.810097327636719]
-    g.moveToJointPosition(jts_both, pos1, plan_only=False)
-
-    start_time=time.time()
-    with open ('data_collection.csv','rb') as csvfile:
-        reader=csv.DictReader(csvfile)
-        n=0
-        for row in reader:
-            n+=1
-        data=np.ones((n,9))
-    with open ('data_collection.csv','rb') as csvfile:
-        reader=csv.DictReader(csvfile)
-        m=0
-        for row in reader:
-            data[m,0]=int(row['step'])
-            data[m,1]=float(row['position_x'])
-            data[m,2]=float(row['position_y'])
-            data[m,3]=float(row['position_z'])
-            data[m,4]=float(row['orientation_x'])
-            data[m,5]=float(row['orientation_y'])
-            data[m,6]=float(row['orientation_z'])
-            data[m,7]=float(row['orientation_w'])
-            data[m,8]=int(row['grippers'])
-            m+=1
-    print ('step len:',n)
-    col_len=1
-    n_epochs=1
-
-    for epoch in range (n_epochs):
-        for step in range (col_len):
-            step+=1
-            p.waitForSync()        
-            pickgoal = PoseStamped() 
-            pickgoal.header.frame_id = "base"
-            pickgoal.header.stamp = rospy.Time.now()
-            pickgoal.pose.position.x = data[step,1]
-            pickgoal.pose.position.y = data[step,2]
-            pickgoal.pose.position.z = data[step,3]
-            pickgoal.pose.orientation.x = data[step,4]
-            pickgoal.pose.orientation.y = data[step,5]
-            pickgoal.pose.orientation.z = data[step,6]
-            pickgoal.pose.orientation.w = data[step,7]
-            gr.moveToPose(pickgoal, "right_gripper", plan_only=False)
-            rospy.sleep(2.0)
-            if data[step,8]==0:
-                rightgripper.close()
-            else:
-                rightgripper.open()
-            print ('step',step+1,'finished, time:',time.time()-start_time)
-            start_time=time.time()
+enc=OneHotEncoder(handle_unknown='ignore')
+categories=[['jean'],['shirt'],['sweater'],['tshirt'],['towel']]
+enc.fit(categories)
 
 class Get_Images():
     def __init__(self,image,shape,transforms=None):
@@ -317,169 +206,6 @@ def test(kcnet,data,true_label,category,position_index):
         correct=False
     return pred,correct
 
-def manipulation(path):
-    p = PlanningSceneInterface("base")
-    g = MoveGroupInterface("both_arms", "base")
-    gr = MoveGroupInterface("right_arm", "base")
-    gl = MoveGroupInterface("left_arm", "base")
-    leftgripper = baxter_interface.Gripper('left')
-    rightgripper=baxter_interface.Gripper('right')
-
-    name=path
-    start_time=time.time()
-    with open (name,'rb') as csvfile:
-        reader=csv.DictReader(csvfile)
-        n=0
-        for row in reader:
-            n+=1
-        data=np.ones((n,15))
-    directions=[]
-    grippers=[]
-    with open (name,'rb') as csvfile:
-        reader=csv.DictReader(csvfile)
-        m=0
-        for row in reader:
-            data[m,0]=int(row['step'])
-            data[m,1]=float(row['r_position_x'])
-            data[m,2]=float(row['r_position_y'])
-            data[m,3]=float(row['r_position_z'])
-            data[m,4]=float(row['r_orientation_x'])
-            data[m,5]=float(row['r_orientation_y'])
-            data[m,6]=float(row['r_orientation_z'])
-            data[m,7]=float(row['r_orientation_w'])
-            data[m,8]=float(row['l_position_x'])
-            data[m,9]=float(row['l_position_y'])
-            data[m,10]=float(row['l_position_z'])
-            data[m,11]=float(row['l_orientation_x'])
-            data[m,12]=float(row['l_orientation_y'])
-            data[m,13]=float(row['l_orientation_z'])
-            data[m,14]=float(row['l_orientation_w'])
-            directions.append(str(row['direction']))
-            grippers.append(str(row['gripper']))
-            m+=1
-    print ('step len:',n)
-    col_len=n
-    n_epochs=1
-
-    for epoch in range (n_epochs):
-        for step in range (col_len):
-            if grippers[step]=='r_o':
-                rightgripper.open()
-            if grippers[step]=='r_c':
-                rightgripper.close()
-            if grippers[step]=='l_o':
-                leftgripper.open()
-            if grippers[step]=='l_c':
-                leftgripper.close()
-            if grippers[step]=='rl_o':
-                rightgripper.open()
-                leftgripper.open()
-            if grippers[step]=='l_c_r_o':
-                leftgripper.close()
-                rospy.sleep(2)
-                rightgripper.open() 
-            else:
-                p.waitForSync()        
-                pickgoal_r = PoseStamped()
-                pickgoal_l=PoseStamped() 
-                pickgoal_r.header.frame_id = "base"
-                pickgoal_l.header.frame_id = "base"
-                pickgoal_r.header.stamp = rospy.Time.now()
-                pickgoal_l.header.stamp = rospy.Time.now()
-                pickgoal_r.pose.position.x = data[step,1]
-                pickgoal_r.pose.position.y = data[step,2]
-                pickgoal_r.pose.position.z = data[step,3]
-                pickgoal_r.pose.orientation.x = data[step,4]
-                pickgoal_r.pose.orientation.y = data[step,5]
-                pickgoal_r.pose.orientation.z = data[step,6]
-                pickgoal_r.pose.orientation.w = data[step,7]
-                pickgoal_l.pose.position.x = data[step,8]
-                pickgoal_l.pose.position.y = data[step,9]
-                pickgoal_l.pose.position.z = data[step,10]
-                pickgoal_l.pose.orientation.x = data[step,11]
-                pickgoal_l.pose.orientation.y = data[step,12]
-                pickgoal_l.pose.orientation.z = data[step,13]
-                pickgoal_l.pose.orientation.w = data[step,14]
-                if directions[step]=='right':
-                    gr.moveToPose(pickgoal_r, "right_gripper", plan_only=False)
-                    rospy.sleep(2.0)
-                if directions[step]=='left':
-                    gl.moveToPose(pickgoal_l, "left_gripper",tolerance =0.05,plan_only=False)
-                    rospy.sleep(2.0)
-                if directions[step]=='both':
-                    gr.moveToPose(pickgoal_r, "right_gripper", plan_only=False)
-                    rospy.sleep(2.0)
-                    gl.moveToPose(pickgoal_l, "left_gripper", plan_only=False)
-                    rospy.sleep(2.0)
-            if grippers[step]=='w_r_c':
-                rightgripper.close()
-            if grippers[step]=='w_l_c':
-                leftgripper.close()
-            if grippers[step]=='w_r_o_l_o':
-                rightgripper.open()
-                leftgripper.open()
-            if grippers[step]=='w_r_o_l_c':
-                leftgripper.close()
-                rospy.sleep(2.0)
-                rightgripper.open()
-                
-            print ('step',step+1,'finished, time:',time.time()-start_time)
-            start_time=time.time()
-
-class image_convert:
-    def __init__(self,pos,num_Segmentation_towel):
-        self.image_depth=message_filters.Subscriber("/camera/depth/image_raw",Image)
-        self.image_rgb=message_filters.Subscriber("/camera/rgb/image_raw",Image)
-        self.bridge=CvBridge()
-        self.time_sychronization=message_filters.ApproximateTimeSynchronizer([self.image_depth,self.image_rgb],queue_size=10,slop=0.01,allow_headerless=True)
-        self.start_time=time.time()
-        self.pos=pos
-        self.num_tw=num_Segmentation_towel
-
-    def callback(self,image_depth,image_rgb):
-        cv_image_rgb=self.bridge.imgmsg_to_cv2(image_rgb)
-        cv_image_rgb=cv2.cvtColor(cv_image_rgb, cv2.COLOR_BGR2RGB)
-        cv_image_depth=self.bridge.imgmsg_to_cv2(image_depth,"32FC1")
-        cv_image_depth = np.array(cv_image_depth, dtype=np.float32)
-        cv2.normalize(cv_image_depth, cv_image_depth, 0, 1, cv2.NORM_MINMAX)
-        cv_image_depth=cv_image_depth*255
-        cv_image_depth_real=self.bridge.imgmsg_to_cv2(image_depth,"16UC1")
-        max_meter=3
-        cv_image_depth_real=np.array(cv_image_depth_real/max_meter,dtype=np.uint8)
-        image=cv_image_depth
-        mask=np.ones(image.shape)*255
-        for i in range(len(image)):
-            for j in range(len(image[i])):
-                    if 60<image[i][j]<65:
-                        if 130<j<470 and i>80:
-                            mask[i][j]=0
-        rgb_mask=np.ones(image.shape)*255
-        shift_step=10
-        for i in range (len(rgb_mask)):
-            for j in range (len(rgb_mask[i])-shift_step):
-                rgb_mask[i][j]=mask[i][j+shift_step]
-        cv_image_depth_real[mask>0]=0
-        cv_image_rgb[rgb_mask>0]=0
-        if time.time()-self.start_time>2:
-            cv2.imwrite('/home/kentuen/Known_Configurations_datas/full_database/Segmentation/towel/pos_'+str(self.pos).zfill(4)+'/Segmentation/towel_'+str(self.num_tw).zfill(4)+'/'+str(time.time())+'_depth.png',cv_image_depth_real)
-            cv2.imwrite('/home/kentuen/Known_Configurations_datas/full_database/Segmentation/towel/pos_'+str(self.pos).zfill(4)+'/Segmentation/towel_'+str(self.num_tw).zfill(4)+'/'+str(time.time())+'_rgb.png',cv_image_rgb)
-            print ('Photo taken!')
-            self.start_time=time.time()
-        cv2.waitKey(3)
-    
-    def image_capture(self):
-        print ('image capture starts...')
-        self.time_sychronization.registerCallback(self.callback)
-
-def pcl_cloud_point_callback(data):
-    pc = ros_numpy.numpify(data)
-    points=np.zeros((pc.shape[0],3))
-    points[:,0]=pc['x']
-    points[:,1]=pc['y']
-    points[:,2]=pc['z']
-    for i in range (len(points)):
-        csv_writer.writerow((str(i+1),points[i,0],points[i,1],points[i,2]))
-
 ###########################################################################        
 parser = argparse.ArgumentParser(description='Known Configurations Project')
 parser.add_argument('--kcnet_model_no',type=int,default=100,help='kcnet model number')
@@ -511,6 +237,8 @@ if args.garnet_model_no==100:
 if args.garnet_shape==100:
     print ('You must assign a shape number for garnet, exiting...')
     exit()
+
+device = torch.device('cpu')
 
 if args.test_procceding==1:
 ##########GarNet Segmentation Stage##############
@@ -587,7 +315,7 @@ if args.test_procceding==1:
     batch_size=32
     confid_circs=[[-30,50,-30,30,60,80],[-30,30,-30,40,70,60],[-20,30,-20,30,50,50],[-40,30,-50,20,70,70]]
     kwargs={'num_workers':4,'pin_memory':True} if cuda else {}
-    model=torch.load('./garnet_model/'+'model_'+str(args.garnet_model_no).zfill(2)+'.pth')
+    model=torch.load('./garnet_model/'+'model_'+str(args.garnet_model_no).zfill(2)+'.pth',map_location=device)
     file_path='./garnet_database/'
     csv_path='./garnet_explore_file/no_'+str(args.garnet_shape+1).zfill(2)+'/explore.csv'
     dataset=GarNet_Dataset(file_path,csv_path,transform=transforms.Compose([
@@ -596,7 +324,8 @@ if args.test_procceding==1:
         transforms.Normalize((garnet_mean,),(garnet_std,))
     ]),opt=1)
     dataloader=DataLoader(dataset,batch_size=batch_size,shuffle=False,**kwargs)
-    embeddings,labels, video_labels=extract_embeddings(dataloader,model)
+    csv_file=pd.read_csv('./garnet_embeddings/embeddings_no_'+str(args.garnet_shape+1).zfill(2)+'.csv')
+    embeddings,labels, video_labels=extract_embeddings_from_csv(csv_file,dataloader,model)
     confid_circ=confid_circs[args.garent_model_no]
     predicted_label,true_label=early_stop(embeddings,labels,video_labels,confid_circ=confid_circ,
     category_idx=args.garnet_shape,video_idx=args.garnet_video_idx)
@@ -641,7 +370,7 @@ if args.test_procceding==2:
         break
     
     kcnet=KCNet()
-    kcnet.load_state_dict(torch.load('./kcnet_model/no_'+str(args.model_no)+'.pt'))
+    kcnet.load_state_dict(torch.load('./kcnet_model/no_'+str(args.model_no)+'.pt',map_location=device))
     kcnet.eval()
     images_add='./kcnet_test_images/'+args.kc_shape+'/pos_'+str(args.kc_pos).zfill(4)+'/image.png'
     true_label=category_index*10+position_index
