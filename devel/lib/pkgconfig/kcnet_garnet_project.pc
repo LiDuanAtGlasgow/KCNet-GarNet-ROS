@@ -1,0 +1,8 @@
+prefix=/home/kentuen/ros_ws/devel
+
+Name: kcnet_garnet_project
+Description: Description of kcnet_garnet_project
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

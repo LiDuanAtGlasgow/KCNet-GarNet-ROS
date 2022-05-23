@@ -2203,6 +2203,24 @@ clean: beginner_tutorials/CMakeFiles/beginner_tutorials_genpy.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Directory level rules for directory kcnet_garnet_project
+
+# Convenience name for "all" pass in the directory.
+kcnet_garnet_project/all:
+
+.PHONY : kcnet_garnet_project/all
+
+# Convenience name for "clean" pass in the directory.
+kcnet_garnet_project/clean:
+
+.PHONY : kcnet_garnet_project/clean
+
+# Convenience name for "preinstall" pass in the directory.
+kcnet_garnet_project/preinstall:
+
+.PHONY : kcnet_garnet_project/preinstall
+
+#=============================================================================
 # Directory level rules for directory image_pipeline-kinetic/camera_calibration
 
 # Convenience name for "all" pass in the directory.

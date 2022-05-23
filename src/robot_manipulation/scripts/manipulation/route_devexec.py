@@ -14,25 +14,21 @@ import csv
 import numpy as np
 import argparse
 
-def picknplace():
+parser = argparse.ArgumentParser(description='Known Configurations Project')
+parser.add_argument('--manipulation_route_address',type=str,default="",help='manipulation route csv file address')
+args = parser.parse_args()
+if args.manipulation_route_address=="":
+    print ("You must select a route address, exiting...")
+    exit()
+
+def manipulation():
     p = PlanningSceneInterface("base")
-    g = MoveGroupInterface("both_arms", "base")
     gr = MoveGroupInterface("right_arm", "base")
     gl = MoveGroupInterface("left_arm", "base")
     leftgripper = baxter_interface.Gripper('left')
     rightgripper=baxter_interface.Gripper('right')
-    jts_both = ['left_e0', 'left_e1', 'left_s0', 'left_s1', 'left_w0', 'left_w1', 'left_w2', 'right_e0', 'right_e1', 'right_s0', 'right_s1', 'right_w0', 'right_w1', 'right_w2']
-    jts_right = ['right_e0', 'right_e1', 'right_s0', 'right_s1', 'right_w0', 'right_w1', 'right_w2']
-    jts_left = ['left_e0', 'left_e1', 'left_s0', 'left_s1', 'left_w0', 'left_w1', 'left_w2']
-    pos1 = [-1.441426162661994, 0.8389151064712133, 0.14240920034028015, -0.14501001475655606, -1.7630090377446503, -1.5706376573674472, 0.09225918246029519,1.7238109084167481, 1.7169079948791506, 0.36930587426147465, -0.33249033539428713, -1.2160632682067871, 1.668587600115967, -1.810097327636719]
-    pos2 = [-0.949534106616211, 1.4994662184448244, -0.6036214393432617, -0.7869321432861328, -2.4735440176391603, -1.212228316241455, -0.8690001153442384, 1.8342575250183106, 1.8668546167236328, -0.45674277907104494, -0.21667478604125978, -1.2712865765075685, 1.7472041154052735, -2.4582042097778323]
-    lpos1 = [-1.441426162661994, 0.8389151064712133, 0.14240920034028015, -0.14501001475655606, -1.7630090377446503, -1.5706376573674472, 0.09225918246029519]
-    lpos2 = [-0.949534106616211, 1.4994662184448244, -0.6036214393432617, -0.7869321432861328, -2.4735440176391603, -1.212228316241455, -0.8690001153442384]    
-    rpos1 = [1.7238109084167481, 1.7169079948791506, 0.36930587426147465, -0.33249033539428713, -1.2160632682067871, 1.668587600115967, -1.810097327636719]
-    rpos2 = [1.8342575250183106, 1.8668546167236328, -0.45674277907104494, -0.21667478604125978, -1.2712865765075685, 1.7472041154052735, -2.4582042097778323]
 
-
-    name='./routes_handeye_cb_stage_3.csv'
+    name=args.manipulation_route_address
     start_time=time.time()
     with open (name,'rb') as csvfile:
         reader=csv.DictReader(csvfile)
@@ -135,8 +131,8 @@ def picknplace():
 
 if __name__=='__main__':
     try:
-        rospy.init_node('pnp', anonymous=True)
-        picknplace()
+        rospy.init_node('manipulation', anonymous=True)
+        manipulation()
 
     except rospy.ROSInterruptException:
         pass
