@@ -126,7 +126,7 @@ def manipulation():
                 rospy.sleep(2.0)
                 rightgripper.open()
                 
-            print ('step',step+1,'finished, time:',time.time()-start_time)
+            print ('step',step+1,'finished, time:',time.time()-start_time,'gripper state:',grippers[step])
             start_time=time.time()
 
 if __name__=='__main__':

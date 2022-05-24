@@ -12,8 +12,9 @@ def early_stop(embedding,labels,video_labels,confid_circ=None,category_idx=None,
     bandwidth_value=6
     len_video=60
     contours=[]
+    color=['#1f77b4','#ff7f01','#2ca02c','#d62728','#9467bd','#1f77b4','#ff7f01','#2ca02c','#d62728','#9467bd']
     standard_points=np.zeros((n,2))
-    csv_writer=csv.writer(f)
+    plt.figure(figsize=(10,10))
     for i in range (n):
         inds=np.where(labels==i+1)[0]
         data=embedding[inds]*10
@@ -30,16 +31,16 @@ def early_stop(embedding,labels,video_labels,confid_circ=None,category_idx=None,
             cont_location.append(line.vertices)
         cont_location=np.array(cont_location)[0]
         contours.append(cont_location)
-        plt.plot(x,y,'o',color=color[i],label=label_plottings[i])
+        plt.plot(x,y,'o',color=color[i],label=shape_names[i])
         standard_points[i,:]=(x,y)
-    plt.legend(loc='best')
-    plt.show()
 
     i=0
     total=0
     inds=np.where(video_labels==video_idx)[0]
     video_data=embedding[inds]*10
     point_count=np.zeros(n)
+    pred=100
+
     for idx in range (len_video):
         i+=1
         x=video_data[:idx+1,0].mean()
@@ -70,23 +71,20 @@ def early_stop(embedding,labels,video_labels,confid_circ=None,category_idx=None,
                 if dists[min_val,1]==select_idx:
                     point_count[select_idx]+=1
         total+=1
-        pred=100
         frame_counts=np.zeros(len(point_count))
         for select_idx in range (len(point_count)):
             count_percentage=point_count[select_idx]/total
             frame_counts[select_idx]=count_percentage*100
             if i>=20:
                 if count_percentage>=0.8:
-                    pred=select_idx
-            if pred<100:
-                csv_writer.writerow((i,0,0,0,0,0,pred))
-            else:
-                csv_writer.writerow((i,frame_counts[0],frame_counts[1],frame_counts[2],frame_counts[3],
-                frame_counts[4],pred))
-            
-        i=0
-        if pred<100:
-            print ('[ground-truth]',shape_names[category_idx],'[pred]:',shape_names[pred])
-        else:
-            print ('[ground-truth]',shape_names[category_idx],'[pred]: Failed!')
-        return shape_names[pred], shape_names[pred]
+                    pred=select_idx     
+        plt.plot(video_data[idx,0],video_data[idx,1],'o',color=color[category_idx])
+    plt.legend(loc='best')
+    plt.show()                   
+
+    if pred<100:
+        print ('[ground-truth]',shape_names[category_idx],'[pred]:',shape_names[pred])
+        return shape_names[category_idx],shape_names[pred]
+    else:
+        print ('[ground-truth]',shape_names[category_idx],'[pred]: Failed!')
+        return shape_names[category_idx], 'failed'

@@ -1,3 +1,15 @@
 /garnet_database/
 /garnet_model/
 /kcnet_model/
+/depth_raw_images/
+/rgb_raw_images/
+/raw_images/
+/garnet_database/
+/raw_images_/
+/__pycache__/
+/kcnet_original_images/
+/kcnet_selected_images/
+/kcnet_selected_images_/
+/cloud_points.csv
+/garnet_predicted_shapes.csv
+/kcnet_predicted_kc.csv

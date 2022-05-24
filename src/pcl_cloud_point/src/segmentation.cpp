@@ -90,7 +90,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 }
 myfile << "no,x,y,z,end\n";
 myfile.close();
-myfile.open ("./src/KCNet_GarNet_Segmentation/cloud_points.csv",std::ios::app);
+myfile.open ("./src/kcnet_garnet_project/src/cloud_points.csv",std::ios::app);
 
 sensor_msgs::PointCloud2 cloud_publish;
 pcl::toROSMsg(*cloud_pub,cloud_publish);
@@ -102,8 +102,7 @@ int
 main (int argc, char** argv)
 {
   ros::init (argc, argv, "pcl_cloud_point");
-  myfile.open ("./src/KCNet_GarNet_Segmentation/cloud_points.csv",std::ios::app);
-  //myfile.close();
+  myfile.open ("./src/kcnet_garnet_project/src/cloud_points.csv",std::ios::app);
   ros::NodeHandle nh;
   ros::Subscriber sub = nh.subscribe ("input", 1, cloud_cb);
   pub = nh.advertise<sensor_msgs::PointCloud2> ("output", 1);

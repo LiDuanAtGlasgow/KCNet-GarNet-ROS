@@ -19,8 +19,8 @@ def gripper_close():
     rightgripper=baxter_interface.Gripper('right')
     rightgripper.calibrate()
     rightgripper.close()
-    #leftgripper.calibrate()
-    #leftgripper.close()
+    leftgripper.calibrate()
+    leftgripper.close()
 
 if __name__=='__main__':
     try:
