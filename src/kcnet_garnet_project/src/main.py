@@ -194,8 +194,8 @@ CATEGORIES=['towel','tshirt','shirt','sweater','jean']
 def test(kcnet,data,shape,true_label,category,position_index):
     output=kcnet(data,shape)
     pred=output.argmax(dim=1,keepdim=True)
-    print ('true_postion:',category,position_index)
-    print('predicted_postion:',CATEGORIES[pred.item()//10],pred.item()%10)
+    print ('true_postion:',category,position_index+1)
+    print('predicted_postion:',CATEGORIES[pred.item()//10],pred.item()%10+1)
     if true_label==pred.item():
         correct=True
     else:
@@ -317,7 +317,7 @@ if args.test_procceding==1:
     csv_writer.writerow((1,predicted_label))
     print ("Garnet stage completed")
     print ("========================================================")
-    print ("Test proceeding one completed, go to robotic manipulation...")
+    print ("Test proceeding one completed, go to robotic manipulation (route_GarNet2KCNet)...")
     print ("========================================================")
 
 if args.test_procceding==2:
@@ -383,9 +383,13 @@ if args.test_procceding==2:
     print ('known configuration recognition is successful!')    
     print ('Kcnet stage completed!')
     print ("========================================================")
+    print ("Test proceeding two completed, go to robotic manipulation (calibrated_manipulation_stage_1)...")
+    print ("========================================================")
 
 ############Hand-Eye Calibration for Grasping Point for Left Hand###############
-    target_path='./paths/'+CATEGORIES[pred.item()//10]+'/pos_'+str(int(pred.item()%10+1)).zfill(4)+'/stage_1.csv'
+if args.test_procceding==3:
+    pred=pd.read_csv('kcnet_predicted_kc.csv').to_numpy()[0][1]
+    target_path='./paths/'+CATEGORIES[pred//10]+'/pos_'+str(int(pred%10+1)).zfill(4)+'/stage_2.csv'
     pre_designed_manipulation=pd.read_csv(target_path).to_numpy()
     pre_designed_steps=0
     pre_designed_key_step=0
@@ -476,13 +480,13 @@ if args.test_procceding==2:
 
     print ("The left gripper hand-eye calibrated!")
     print ("========================================================")
-    print ("Test procceeding two completed, go to robotic manipulation....")
+    print ("Test procceeding three completed, go to robotic manipulation (calibrated_manipulation_stage_2)....")
     print ("========================================================")
 
-if args.test_procceding==3:
+if args.test_procceding==4:
 ###############Hand-Eye Calibration for Grasping Point for Right Hand#################
     pred=pd.read_csv('kcnet_predicted_kc.csv').to_numpy()[0][1]
-    target_path='./paths/'+CATEGORIES[pred//10]+'/pos_'+str(int(pred%10+1)).zfill(4)+'/stage_2.csv'
+    target_path='./paths/'+CATEGORIES[pred//10]+'/pos_'+str(int(pred%10+1)).zfill(4)+'/stage_3.csv'
     pre_designed_manipulation=pd.read_csv(target_path).to_numpy()
     pre_designed_steps=0
     pre_designed_key_step=0
@@ -571,7 +575,7 @@ if args.test_procceding==3:
             pre_designed_manipulation[idx,14],pre_designed_manipulation[idx,15],pre_designed_manipulation[idx,16]))
     print ("The right gripper hand-eye calibrated!")
     print ("========================================================")
-    print ("Test proceeding three completed, go to robotic manipulation...")
+    print ("Test proceeding four completed, go to robotic manipulation (calibrated_manipulation_stage_3)...")
     print ("========================================================")
 ###################################################
 
