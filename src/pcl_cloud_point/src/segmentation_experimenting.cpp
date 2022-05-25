@@ -28,8 +28,13 @@
 //geometry
 #include "geometry_msgs/PoseStamped.h"
 
+//c++
+#include <iostream>
+#include <fstream>
+
 
 ros::Publisher pub;
+std::ofstream myfile;
 void 
 cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 {
@@ -54,20 +59,6 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
   pcl::PointXYZRGB pt_color;
   tf::TransformListener listener;
   tf::StampedTransform transform;
-  //tf::Transformer transform;
-  //float gripper_x=0.5189491798; 						
-  //float gripper_y=0.1250818048;
-  //float gripper_z=-0.1772217644;
-  float gripper_x=0.5056303011; 						
-  float gripper_y=0.087287458;
-  float gripper_z=-0.2270845833;
-  float min_dis=100;
-  float target_x=0;
-  float target_y=0;
-  float target_z=0;
-  float targethec_x=0;
-  float targethec_y=0;
-  float targethec_z=0;
   for(int i = 0 ; i < temp_cloud->points.size(); ++i){
   x_temp = temp_cloud->points[i].x;
   y_temp = temp_cloud->points[i].y;
@@ -92,29 +83,14 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
           float x_display=temp_cloud_2->points[i].x;
           float y_display=temp_cloud_2->points[i].y;
           float z_display=temp_cloud_2->points[i].z;
+          myfile <<i<<","<<x_display<<","<<y_display<<","<<z_display<<",normal\n";
           ROS_INFO("temp_cloud->points x:[%f], y:[%f], z[%f], cout[%i]",x_temp,y_temp,z_temp,count);
-          ROS_INFO("temp_cloud_2->points x:[%f], y:[%f], z[%f], cout[%i]",x_display,y_display,z_display,count);
-          float dis=sqrt(pow((gripper_x-x_display),2)+pow((gripper_y-y_display),2)+pow((gripper_z-z_display),2));
-          if (min_dis>dis){
-            min_dis=dis;
-            target_x=temp_cloud->points[i].x;
-            target_y=temp_cloud->points[i].y;
-            target_z=temp_cloud->points[i].z;
-            targethec_x=x_display;
-            targethec_y=y_display;
-            targethec_z=z_display;
-          }
       }
   }
 }
-pt_color.x = target_x;
-pt_color.y = target_y;
-pt_color.z = target_z;
-pt_color.r=static_cast<int> (0);
-pt_color.g=static_cast<int> (255);
-pt_color.b=static_cast<int> (0);
-ROS_INFO("minimal distance [%f], target_x [%f], target_y [%f], target_z [%f]",min_dis,targethec_x,targethec_y,targethec_z);
-cloud_pub->points.push_back(pt_color);
+myfile << "no,x,y,z,end\n";
+myfile.close();
+myfile.open ("./src/kcnet_garnet_project/src/cloud_points.csv",std::ios::app);
 
 sensor_msgs::PointCloud2 cloud_publish;
 pcl::toROSMsg(*cloud_pub,cloud_publish);
@@ -126,6 +102,7 @@ int
 main (int argc, char** argv)
 {
   ros::init (argc, argv, "pcl_cloud_point");
+  myfile.open ("./src/kcnet_garnet_project/src/cloud_points.csv",std::ios::app);
   ros::NodeHandle nh;
   ros::Subscriber sub = nh.subscribe ("input", 1, cloud_cb);
   pub = nh.advertise<sensor_msgs::PointCloud2> ("output", 1);

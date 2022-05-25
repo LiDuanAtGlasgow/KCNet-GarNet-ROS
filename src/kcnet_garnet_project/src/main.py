@@ -431,8 +431,8 @@ if args.test_procceding==3:
         if dis<min:
             min=dis
             chosen_idx=idx
-            pre_designed_point_[8]=float(cloud_points_collection_x[idx])
-            pre_designed_point_[9]=float(cloud_points_collection_y[idx])-0.1
+            pre_designed_point_[8]=float(cloud_points_collection_x[idx])+0.03
+            pre_designed_point_[9]=float(cloud_points_collection_y[idx])-0.05
             pre_designed_point_[10]=float(cloud_points_collection_z[idx])
     
     print ("pre_designed_point[8]",float(pre_designed_point[8]),", cloud_points_collection_x[chosen_idx]",float(cloud_points_collection_x[chosen_idx]))
@@ -526,8 +526,8 @@ if args.test_procceding==4:
         +pow((float(pre_designed_point[3])-float(cloud_points_collection_z[idx])),2))
         if dis<min:
             min=dis
-            pre_designed_point_[1]=float(cloud_points_collection_x[idx])
-            pre_designed_point_[2]=float(cloud_points_collection_y[idx])+0.1
+            pre_designed_point_[1]=float(cloud_points_collection_x[idx])+0.03
+            pre_designed_point_[2]=float(cloud_points_collection_y[idx])+0.05
             pre_designed_point_[3]=float(cloud_points_collection_z[idx])
             chosen_idx=idx
 

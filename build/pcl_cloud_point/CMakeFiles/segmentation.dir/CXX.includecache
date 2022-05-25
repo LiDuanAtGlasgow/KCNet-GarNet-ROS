@@ -51,10 +51,6 @@ tf/transform_listener.h
 -
 geometry_msgs/PoseStamped.h
 /home/kentuen/ros_ws/src/pcl_cloud_point/src/geometry_msgs/PoseStamped.h
-iostream
--
-fstream
--
 
 /opt/ros/kinetic/include/dynamic_reconfigure/BoolParameter.h
 string

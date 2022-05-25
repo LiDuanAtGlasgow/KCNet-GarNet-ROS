@@ -124,7 +124,7 @@ def manipulation():
             if grippers[step]=='w_r_o_l_c':
                 leftgripper.close()
                 rospy.sleep(2.0)
-                rightgripper.open()
+                #rightgripper.open()
                 
             print ('step',step+1,'finished, time:',time.time()-start_time,'gripper state:',grippers[step])
             start_time=time.time()
