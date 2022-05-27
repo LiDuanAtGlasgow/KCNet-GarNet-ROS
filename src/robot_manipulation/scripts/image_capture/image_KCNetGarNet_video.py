@@ -12,13 +12,12 @@ import message_filters
 import os 
 
 class image_convert:
-    def __init__(self,no):
+    def __init__(self):
         self.image_depth=message_filters.Subscriber("/camera/depth/image_raw",Image)
         self.image_rgb=message_filters.Subscriber("/camera/rgb/image_raw",Image)
         self.bridge=CvBridge()
         self.time_sychronization=message_filters.ApproximateTimeSynchronizer([self.image_depth,self.image_rgb],queue_size=10,slop=0.01,allow_headerless=True)
         self.start_time=time.time()
-        self.no=no
 
     def callback(self,image_depth,image_rgb):
         cv_image_rgb=self.bridge.imgmsg_to_cv2(image_rgb)
@@ -26,23 +25,24 @@ class image_convert:
         cv_image_depth=self.bridge.imgmsg_to_cv2(image_depth,"16UC1")
         max_meter=3
         cv_image_depth=np.array(cv_image_depth/max_meter,dtype=np.uint8)
-        cv2.imwrite('/home/kentuen/known_configurations_demonstration_videos/'+'video_'+str(self.no).zfill(4)+'/images/'+str(time.time())+'_depth.png',cv_image_depth)
-        cv2.imwrite('/home/kentuen/known_configurations_demonstration_videos/'+'video_'+str(self.no).zfill(4)+'/images/'+str(time.time())+'_rgb.png',cv_image_rgb)
-        self.start_time=time.time()
+        if time.time()-self.start_time>2:
+            cv2.imwrite('/home/kentuen/Known_Configurations_datas/GarNet_KCNet/Video_Frames/video/'+str(time.time())+'_depth.png',cv_image_depth)
+            cv2.imwrite('/home/kentuen/Known_Configurations_datas/GarNet_KCNet/Video_Frames/video/'+str(time.time())+'_rgb.png',cv_image_rgb)
+            print ("Photo taken!")
+            self.start_time=time.time()
         cv2.waitKey(3)
     
     def image_capture(self):
-        print ('image capture starts...')
+        print ('mage capture starts...')
         self.time_sychronization.registerCallback(self.callback)
 
 
 def main(args):
-    no=4
-    direcorty='/home/kentuen/known_configurations_demonstration_videos/'+'video_'+str(no).zfill(4)+'/images/'
+    direcorty='/home/kentuen/Known_Configurations_datas/GarNet_KCNet/Video_Frames/video/'
     if not os.path.exists(direcorty):
         os.makedirs(direcorty)
     rospy.init_node("cv_image_convertor",anonymous=True)
-    convertor=image_convert(no=no)
+    convertor=image_convert()
     convertor.image_capture()
     try:
         rospy.spin()

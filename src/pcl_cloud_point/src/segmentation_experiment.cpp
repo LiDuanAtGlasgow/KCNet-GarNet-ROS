@@ -71,7 +71,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
   pcl_conversions::toPCL(pcl_out,pcl_pc2);
   pcl::PointCloud<pcl::PointXYZ>::Ptr temp_cloud_2(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::fromPCLPointCloud2(pcl_pc2,*temp_cloud_2);
-  if (z_temp<1){
+  if (z_temp<1.2){
       if (z_temp>0.4){
           pt_color.x = temp_cloud->points[i].x;
           pt_color.y = temp_cloud->points[i].y;

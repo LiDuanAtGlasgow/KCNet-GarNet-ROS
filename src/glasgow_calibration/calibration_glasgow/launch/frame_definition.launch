@@ -1,5 +1,5 @@
 <launch>
-     <arg name="camera_link_pose" default="1.4933452 0.05003753378 0.227386 3.2181936841 -0.005102192 -0.0004317"/>
+     <arg name="camera_link_pose" default="1.7333452 0.05003753378 0.227386 3.2181936841 -0.005102192 -0.0004317"/>
      <node pkg="tf" type="static_transform_publisher" name="camera_link_broadcaster"
                args="$(arg camera_link_pose) /base /camera_link 100" />
 </launch>

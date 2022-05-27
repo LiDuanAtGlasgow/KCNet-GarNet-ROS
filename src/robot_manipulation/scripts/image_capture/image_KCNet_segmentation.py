@@ -34,13 +34,15 @@ class image_convert:
         mask=np.ones(image.shape)*255
         for i in range(len(image)):
             for j in range(len(image[i])):
-                    if 0<image[i][j]<30:
+                    if 10<image[i][j]<38:
                         if 130<j<470 and i>80:
                             mask[i][j]=0
         masked_image=cv_image_depth_real
         masked_image[mask>0]=0
         if time.time()-self.start_time>2:
-            cv2.imwrite('/home/kentuen/ros_ws/src/kcnet_garnet_project/src/kcnet_original_images/image_%f.png'%(time.time()),masked_image)
+            cv2.imwrite('/home/kentuen/ros_ws/src/kcnet_garnet_project/src/kcnet_original_images/%f_image.png'%(time.time()),masked_image)
+            cv2.imwrite('/home/kentuen/ros_ws/src/kcnet_garnet_project/src/kcnet_original_images/%f_mask.png'%(time.time()),mask)
+            cv2.imwrite('/home/kentuen/ros_ws/src/kcnet_garnet_project/src/kcnet_original_images/%f_rgb.png'%(time.time()),cv_image_rgb)
             print ('Photo taken!')
             self.start_time=time.time()
         cv2.waitKey(3)

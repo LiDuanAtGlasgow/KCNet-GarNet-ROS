@@ -15,7 +15,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import time
 import csv
-from continuous_perception import early_stop
+from continuous_perception import early_stop,early_stop_for_animation_csv,early_stop_animation
 import csv
 import sys
 from sklearn.preprocessing import OneHotEncoder
@@ -211,6 +211,7 @@ parser.add_argument('--kc_pos',type=int,default=100,help='kcnet stage garment gr
 parser.add_argument('--garnet_model_no',type=int,default=100,help='garnet model number')
 parser.add_argument('--garnet_shape',type=int,default=100,help='garnet stage garment groud-truth shape')
 parser.add_argument('--garnet_video_idx',type=int,default=11,help='garnet stage unseen garment index')
+parser.add_argument('--kcnet_input_true_shape',type=str,default="none",help='kcnet groud-truth shape directly input from commands')
 args = parser.parse_args()
 
 ############################################################################
@@ -240,7 +241,7 @@ if args.test_procceding==1:
 ##########GarNet Segmentation Stage##############
     shapes=['pant','shirt','sweater','towel','tshirt']
     shape_label=shapes[args.garnet_shape]
-    f=open('./garnet_explore_file/no_'+str(args.garnet_shape+1).zfill(2)+'/explore.csv','w')
+    f=open('./garnet_explore_file/no_'+str(args.garnet_model_no).zfill(2)+'/explore.csv','w')
     csv_writer=csv.writer(f)
     csv_writer.writerow(('name','shape','discretised_weight','video_idx'))
     depth_folder='./depth_raw_images/'
@@ -267,13 +268,13 @@ if args.test_procceding==1:
         for i in range(len(image)):
             if idx<=15:
                 for j in range(len(image[i])):
-                    if 0<image[i][j]<55:
-                        if 100<j<360 and 300>i>270:
+                    if 0<image[i][j]<60:
+                        if 100<j<360 and 295>i>270:
                             mask[i][j]=0
             if 15<idx:
                 for j in range(len(image[i])):
-                    if 0<image[i][j]<55:
-                        if 100<j<360 and 300>i>270-int(((250/45)*(idx-14))):
+                    if 0<image[i][j]<60:
+                        if 100<j<360 and 295>i>270-int(((250/45)*(idx-14))):
                             mask[i][j]=0
 
         depth_image=cv2.imread(depth_folder+shape_label+'_garnet_kcnet_test_'+str(idx+1).zfill(4)+'.png')
@@ -340,7 +341,10 @@ if args.test_procceding==2:
     stds=[0.0821249,0.08221505,0.08038522,0.0825848]
     category=args.kc_shape
     position_index=args.kc_pos-1
-    shape=pd.read_csv('garnet_predicted_shapes.csv').to_numpy()[0][1]
+    if args.kcnet_input_true_shape=="none":
+        shape=pd.read_csv('garnet_predicted_shapes.csv').to_numpy()[0][1]
+    else:
+        shape=args.kcnet_input_true_shape
     print('shape:',shape)
 
     if category=='towel':
@@ -378,8 +382,8 @@ if args.test_procceding==2:
     
     f=open('kcnet_predicted_kc.csv','w')
     csv_writer=csv.writer(f)
-    csv_writer.writerow('no','kc_no')
-    csv_writer.writerow(1,pred.item())
+    csv_writer.writerow(('no','kc_no'))
+    csv_writer.writerow((1,pred.item()))
     print ('known configuration recognition is successful!')    
     print ('Kcnet stage completed!')
     print ("========================================================")
@@ -431,7 +435,7 @@ if args.test_procceding==3:
         if dis<min:
             min=dis
             chosen_idx=idx
-            pre_designed_point_[8]=float(cloud_points_collection_x[idx])+0.03
+            pre_designed_point_[8]=float(cloud_points_collection_x[idx])+0.05
             pre_designed_point_[9]=float(cloud_points_collection_y[idx])-0.05
             pre_designed_point_[10]=float(cloud_points_collection_z[idx])
     
@@ -449,7 +453,7 @@ if args.test_procceding==3:
         print ("========================================================")
         exit()  
 
-    f=open('/home/kentuen/ros_ws/src/robot_manipulation/scripts/manipulation/calibrated_manipulation_stage_1.csv','w')
+    f=open('/home/kentuen/ros_ws/src/robot_manipulation/scripts/manipulation/calibrated_manipulation_stage_4.csv','w')
     csv_writer=csv.writer(f)
     csv_writer.writerow(('step','r_position_x','r_position_y','r_position_z','r_orientation_x','r_orientation_y', 'r_orientation_z',	'r_orientation_w','l_position_x','l_position_y','l_position_z'	
     ,'l_orientation_x','l_orientation_y','l_orientation_z','l_orientation_w','direction','gripper'))
@@ -480,13 +484,13 @@ if args.test_procceding==3:
 
     print ("The left gripper hand-eye calibrated!")
     print ("========================================================")
-    print ("Test procceeding three completed, go to robotic manipulation (calibrated_manipulation_stage_2)....")
+    print ("Test procceeding three completed, go to robotic manipulation (calibrated_manipulation_stage_2 and calibrated_manipulation_stage_3)....")
     print ("========================================================")
 
 if args.test_procceding==4:
 ###############Hand-Eye Calibration for Grasping Point for Right Hand#################
     pred=pd.read_csv('kcnet_predicted_kc.csv').to_numpy()[0][1]
-    target_path='./paths/'+CATEGORIES[pred//10]+'/pos_'+str(int(pred%10+1)).zfill(4)+'/stage_3.csv'
+    target_path='./paths/'+CATEGORIES[pred//10]+'/pos_'+str(int(pred%10+1)).zfill(4)+'/stage_4.csv'
     pre_designed_manipulation=pd.read_csv(target_path).to_numpy()
     pre_designed_steps=0
     pre_designed_key_step=0
@@ -526,7 +530,7 @@ if args.test_procceding==4:
         +pow((float(pre_designed_point[3])-float(cloud_points_collection_z[idx])),2))
         if dis<min:
             min=dis
-            pre_designed_point_[1]=float(cloud_points_collection_x[idx])+0.03
+            pre_designed_point_[1]=float(cloud_points_collection_x[idx])+0.05
             pre_designed_point_[2]=float(cloud_points_collection_y[idx])+0.05
             pre_designed_point_[3]=float(cloud_points_collection_z[idx])
             chosen_idx=idx
@@ -546,7 +550,7 @@ if args.test_procceding==4:
         print ("========================================================")
         exit()
 
-    f=open('/home/kentuen/ros_ws/src/robot_manipulation/scripts/manipulation/calibrated_manipulation_stage_2.csv','w')
+    f=open('/home/kentuen/ros_ws/src/robot_manipulation/scripts/manipulation/calibrated_manipulation_stage_4.csv','w')
     csv_writer=csv.writer(f)
     csv_writer.writerow(('step','r_position_x','r_position_y','r_position_z','r_orientation_x','r_orientation_y', 'r_orientation_z',	'r_orientation_w','l_position_x','l_position_y','l_position_z'	
     ,'l_orientation_x','l_orientation_y','l_orientation_z','l_orientation_w','direction','gripper'))
@@ -575,7 +579,31 @@ if args.test_procceding==4:
             pre_designed_manipulation[idx,14],pre_designed_manipulation[idx,15],pre_designed_manipulation[idx,16]))
     print ("The right gripper hand-eye calibrated!")
     print ("========================================================")
-    print ("Test proceeding four completed, go to robotic manipulation (calibrated_manipulation_stage_3)...")
+    print ("Test proceeding four completed, go to robotic manipulation (calibrated_manipulation_stage_4)...")
+    print ("========================================================")
+
+if args.test_procceding==5:
+    garnet_mean,garnet_std=0.00586554,0.03234654
+    batch_size=32
+    confid_circs=[[-30,50,-30,30,60,80],[-30,30,-30,40,70,60],[-20,30,-20,30,50,50],[-40,30,-50,20,70,70]]
+    kwargs={'num_workers':4,'pin_memory':True} if cuda else {}
+    model=torch.load('/home/kentuen/ros_ws/src/kcnet_garnet_project/src/garnet_model/'+'no_'+str(args.garnet_model_no).zfill(2)+'.pth',map_location=device)
+    file_path='/home/kentuen/ros_ws/src/kcnet_garnet_project/src/garnet_database/'
+    csv_path='/home/kentuen/ros_ws/src/kcnet_garnet_project/src/garnet_explore_file/no_'+str(args.garnet_model_no).zfill(2)+'/explore.csv'
+    dataset=GarNet_Dataset(file_path,csv_path,transform=transforms.Compose([
+        transforms.Resize((256,256)),
+        transforms.ToTensor(),
+        transforms.Normalize((garnet_mean,),(garnet_std,))
+    ]),opt=1)
+    dataloader=DataLoader(dataset,batch_size=batch_size,shuffle=False,**kwargs)
+    csv_file=pd.read_csv('./garnet_embeddings/embeddings_no_'+str(args.garnet_model_no).zfill(2)+'.csv').to_numpy()
+    embeddings,labels, video_labels=extract_embeddings_from_csv(csv_file,dataloader,model)
+    confid_circ=confid_circs[args.garnet_model_no-1]
+    csv_address=early_stop_for_animation_csv(embeddings,labels,video_labels,confid_circ=confid_circ, category_idx=args.garnet_shape,video_idx=args.garnet_video_idx)
+    csv_data=pd.read_csv(csv_address).to_numpy()
+    early_stop_animation(csv_data)
+    print ("========================================================")
+    print ("GarNet Continous Perception Tracking CSV construction completed!")
     print ("========================================================")
 ###################################################
 
