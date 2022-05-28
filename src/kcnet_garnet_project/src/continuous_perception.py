@@ -199,8 +199,9 @@ def early_stop_animation(cp_data,samp_number=60):
         subplot.set_xlabel('Input frame')
         subplot.set_ylabel('Percentage (%)')
         plt.legend()
-        plt.xlim([1,samp_number])
-        plt.savefig('./GarNet_cp_animation/frame_'+str(t+1).zfill(4)+'.png')
+        plt.xlim([0,samp_number])
+        plt.ylim([0,100])
+        plt.savefig('./garnet_cp_animation/frame_'+str(t+1).zfill(4)+'.png')
         plt.close()
         if t%int(samp_number/10)==0:
             print (f'GarNet cp tracking frame [{t+1}/{samp_number}] has been finished, time={time.time()-start_time}')

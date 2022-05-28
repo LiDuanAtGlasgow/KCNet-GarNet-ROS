@@ -34,7 +34,7 @@ class image_convert:
         mask=np.ones(image.shape)*255
         for i in range(len(image)):
             for j in range(len(image[i])):
-                    if 10<image[i][j]<38:
+                    if 10<image[i][j]<50:
                         if 130<j<470 and i>80:
                             mask[i][j]=0
         masked_image=cv_image_depth_real

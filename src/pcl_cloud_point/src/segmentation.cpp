@@ -57,9 +57,9 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
   //float gripper_x=0.5505403037; 								
   //float gripper_y=0.0952872271;
   //float gripper_z=-0.2201410892;
-  float gripper_x=0.4756314016;						
-  float gripper_y=0.1476283391;
-  float gripper_z=0.2954016962;
+  float gripper_x=0.553420883;						
+  float gripper_y=0.1443369632;
+  float gripper_z=-0.1075665923;
   float min_dis=100;
   float target_x=0;
   float target_y=0;

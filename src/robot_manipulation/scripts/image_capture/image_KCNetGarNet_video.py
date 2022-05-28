@@ -33,7 +33,7 @@ class image_convert:
         cv2.waitKey(3)
     
     def image_capture(self):
-        print ('mage capture starts...')
+        print ('Image capture starts...')
         self.time_sychronization.registerCallback(self.callback)
 
 
