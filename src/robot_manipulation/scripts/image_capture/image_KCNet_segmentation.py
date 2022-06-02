@@ -29,7 +29,6 @@ class image_convert:
         cv_image_depth_real=self.bridge.imgmsg_to_cv2(image_depth,"16UC1")
         max_meter=3
         cv_image_depth_real=np.array(cv_image_depth_real/max_meter,dtype=np.uint8)
-        depth_image_original=cv_image_depth_real
         image=cv_image_depth
         mask=np.ones(image.shape)*255
         for i in range(len(image)):

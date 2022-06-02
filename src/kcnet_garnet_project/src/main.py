@@ -24,6 +24,7 @@ import glob
 import torchvision.models as models
 import torch.nn.functional as F
 import math
+from image_replace import image_replace
 
 np.random.seed(42)
 torch.manual_seed(42)
@@ -212,6 +213,8 @@ parser.add_argument('--garnet_model_no',type=int,default=100,help='garnet model 
 parser.add_argument('--garnet_shape',type=int,default=100,help='garnet stage garment groud-truth shape')
 parser.add_argument('--garnet_video_idx',type=int,default=11,help='garnet stage unseen garment index')
 parser.add_argument('--kcnet_input_true_shape',type=str,default="none",help='kcnet groud-truth shape directly input from commands')
+parser.add_argument('--garnet_replacement_start',type=int,default=1,help='garnet image replacement starting number')
+parser.add_argument('--garnet_replacement_end',type=int,default=60,help='garnet image replacement ending number')
 args = parser.parse_args()
 
 ############################################################################
@@ -245,7 +248,7 @@ if args.test_procceding==1:
     csv_writer=csv.writer(f)
     csv_writer.writerow(('name','shape','discretised_weight','video_idx'))
     depth_folder='./depth_raw_images/'
-    masked_depth_folder='./garnet_database/'
+    masked_depth_folder='./garnet_database_/'
     if not os.path.exists(depth_folder):
         os.makedirs(depth_folder)
     if not os.path.exists(masked_depth_folder):
@@ -268,13 +271,14 @@ if args.test_procceding==1:
         for i in range(len(image)):
             if idx<=15:
                 for j in range(len(image[i])):
-                    if 0<image[i][j]<60:
-                        if 100<j<360 and 295>i>270:
+                    if 40<image[i][j]<60:
+                        if 20<j<460 and 295>i>270:
                             mask[i][j]=0
             if 15<idx:
                 for j in range(len(image[i])):
                     if 0<image[i][j]<60:
-                        if 100<j<360 and 295>i>270-int(((250/45)*(idx-14))):
+                        if 20<j<460 and 240>i>270-int(((250/45)*(idx-14))):
+                        #if 20<j<360 and 240>i>20: #for shirt
                             mask[i][j]=0
 
         depth_image=cv2.imread(depth_folder+shape_label+'_garnet_kcnet_test_'+str(idx+1).zfill(4)+'.png')
@@ -284,6 +288,7 @@ if args.test_procceding==1:
             print('No',idx+1,'has been finished! time consumed:',time.time()-start_time)
             start_time=time.time()
     f.close()
+    image_replace(args.garnet_replacement_start,args.garnet_replacement_end,shape_label)
     print ("========================================================")
     print ('Garnet segmentation completed!')
     print ("========================================================")
@@ -371,6 +376,7 @@ if args.test_procceding==2:
         transforms.ToTensor(),
         transforms.Resize((256,256)),
         transforms.Normalize((normalises[args.kcnet_model_no-1],), (stds[args.kcnet_model_no-1],))
+        #transforms.Normalize((0.00586554,),(0.03234654,))
     ])
     data,shape=Get_Images(image=images,shape=shape,transforms=transform).__getitem__()
     shape=torch.from_numpy(shape).type(torch.float32)

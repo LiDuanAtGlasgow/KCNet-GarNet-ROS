@@ -54,12 +54,12 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
   pcl::PointXYZRGB pt_color;
   tf::TransformListener listener;
   tf::StampedTransform transform;
-  //float gripper_x=0.5505403037; 								
-  //float gripper_y=0.0952872271;
-  //float gripper_z=-0.2201410892;
-  float gripper_x=0.553420883;						
-  float gripper_y=0.1443369632;
-  float gripper_z=-0.1075665923;
+  float gripper_x=0.5920641946;								
+  float gripper_y=0.0848949198;
+  float gripper_z=0.1622691103;
+  //float gripper_x=0.4384432518;							
+  //float gripper_y=0.1559404069;
+  //float gripper_z=0.3121685513;
   float min_dis=100;
   float target_x=0;
   float target_y=0;

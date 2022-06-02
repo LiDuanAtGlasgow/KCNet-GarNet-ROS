@@ -15,7 +15,8 @@ def early_stop(embedding,labels,video_labels,confid_circ=None,category_idx=None,
     bandwidth_value=6
     len_video=60
     contours=[]
-    color=['#1f77b4','#ff7f01','#2ca02c','#d62728','#9467bd','#1f77b4','#ff7f01','#2ca02c','#d62728','#9467bd']
+    color=['#1f77b4','#ff7f01','#2ca02c','#d62728','#9467bd']
+    levelled_color=['#1f77b4','#ff7f01','#2ca02c','#d62728','#9467bd']
     standard_points=np.zeros((n,2))
     plt.figure(figsize=(10,10))
     for i in range (n):
@@ -77,9 +78,18 @@ def early_stop(embedding,labels,video_labels,confid_circ=None,category_idx=None,
             count_percentage=point_count[select_idx]/total
             frame_counts[select_idx]=count_percentage*100
             if i>=20:
-                if count_percentage>=0.6:
-                    pred=select_idx     
-        plt.plot(video_data[idx,0],video_data[idx,1],'o',color=color[category_idx])
+                if count_percentage>=0.8:
+                    pred=select_idx
+        if i<=12:
+            plt.plot(video_data[idx,0],video_data[idx,1],'o',color=levelled_color[0])
+        elif 12<i<=24:
+            plt.plot(video_data[idx,0],video_data[idx,1],'o',color=levelled_color[1])
+        elif 24<i<=36:
+            plt.plot(video_data[idx,0],video_data[idx,1],'o',color=levelled_color[2])
+        elif 36<i<=48:
+            plt.plot(video_data[idx,0],video_data[idx,1],'o',color=levelled_color[3])
+        elif 48<i<=60:
+            plt.plot(video_data[idx,0],video_data[idx,1],'o',color=levelled_color[4])     
     plt.legend(loc='best')
     plt.show()                   
 
@@ -95,7 +105,7 @@ def early_stop_for_animation_csv(embedding,labels,video_labels,confid_circ=None,
     bandwidth_value=6
     len_video=60
     contours=[]
-    color=['#1f77b4','#ff7f01','#2ca02c','#d62728','#9467bd','#1f77b4','#ff7f01','#2ca02c','#d62728','#9467bd']
+    color=['#1f77b4','#ff7f01','#2ca02c','#d62728','#9467bd']
     standard_points=np.zeros((n,2))
     plt.figure(figsize=(10,10))
     csv_address='./garnet_cp_tracking.csv'

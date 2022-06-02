@@ -1,0 +1,2 @@
+step,r_position_x,r_position_y,r_position_z,r_orientation_x,r_orientation_y,r_orientation_z,r_orientation_w,l_position_x,l_position_y,l_position_z,l_orientation_x,l_orientation_y,l_orientation_z,l_orientation_w,direction,gripper
+1,0.5542480485,0.0043836464,0.4979349973,-0.9999406116,-0.0049591526,0.0072556756,0.0064447841,0.7492803228,-0.0172222562,-0.0125288029,0.7062362825,-0.0089166446,0.0051718349,0.7079011646,right,open
